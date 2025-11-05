@@ -23,7 +23,7 @@ on:
 
 env:
   REGISTRY: "ghcr.io"
-  ORG: "pqca"
+  ORG: "cbomkit"
   IMAGE_NAME: "cbomkit-action"
 
 jobs:
@@ -94,7 +94,7 @@ jobs:
         uses: advanced-security/maven-dependency-submission-action@v5
         if: github.event_name != 'pull_request'
       - name: Create CBOM
-        uses: PQCA/cbomkit-action@v2.1.1
+        uses: cbomkit/cbomkit-action@v2.1.1
         id: cbom
           # Persist CBOM after a job has completed and share
           # that CBOM with another job in the same workflow.

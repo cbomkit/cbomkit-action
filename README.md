@@ -67,7 +67,7 @@ CBOMkit-action's behavior can be controlled via the following additional environ
 
 ## Supported languages and libraries
 
-The current scanning capabilities of the CBOMkit are defined by the [Sonar Cryptography Plugin's](https://github.com/IBM/sonar-cryptography) supported languages 
+The current scanning capabilities of the CBOMkit are defined by the [Sonar Cryptography Plugin's](https://github.com/cbomkit/sonar-cryptography) supported languages 
 and cryptographic libraries:
 
 | Language | Cryptographic Library                                                                         | Coverage | 
