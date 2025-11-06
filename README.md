@@ -28,7 +28,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create CBOM
-        uses: PQCA/cbomkit-action@v2.1.0
+        uses: cbomkit/cbomkit-action@v2.1.1
         id: cbom
         env:
           CBOMKIT_LANGUAGES: java, python # or java or python
