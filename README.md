@@ -41,29 +41,35 @@ jobs:
           path: ${{ steps.cbom.outputs.pattern }}
           if-no-files-found: warn 
 ```
+
+[!NOTE]
+For java repositories, the precision and the quality of generated CBOM depends on the scanner's ability
+to resolve symbols defined in the dependencies. We therefore recommend to build all java code prior to scanning
+as shown in above example. `cbomkit-action` auto-constructs a list of directories used by the scanner to search for java dependencies (jar/zip files). By default, this list contains the project directory (cloning target) and the maven/gradle default repository path. The scanning option `CBOMKIT_JAVA_JAR_DIR` allows to append an additional path expression to the default list. This expression may contain wildcards (`*`) to denote arbitrary directories.
+
 ### Parameters
 
 CBOMkit-action requires the following parameters passed as enviroment variables.  If run in a workflow, these variables are automatically set by the checkout step.
 
-- GITHUB_WORKSPACE: Mandotory root directory of the cloned repository.
-- GITHUB_OUTPUT: Mandatory filename containing the name pattern of the CBOM files used by uploader.
-- GITHUB_SERVER_URL: (Optional) Github server url. Will be used to set the gitUrl property in the CBOM metadata which is used by CBOMkit viewer.
-- GITHUB_REPOSITORY: (Optional) Github repository name. Will be used to set the
+- `GITHUB_WORKSPACE`: Mandotory root directory of the cloned repository.
+- `GITHUB_OUTPUT`: Mandatory filename containing the name pattern of the CBOM files used by uploader.
+- `GITHUB_SERVER_URL`: (Optional) Github server url. Will be used to set the gitUrl property in the CBOM metadata which is used by CBOMkit viewer.
+- `GITHUB_REPOSITORY`: (Optional) Github repository name. Will be used to set the
  gitUrl property in the CBOM metadata which is used by CBOMkit viewer. gitUrl metadata property = GITHUB_SERVER_URL + "/" + GITHUB_REPOSITORY.
-- GITHUB_REF_NAME: (Optional) Github ref name. Will be used to set the revision (branch)  property in the CBOM metadata which is used by CBOMkit viewer.
-- GITHUB_SHA: (Optional) Github commit SHA value. The first 7 characters will be used to set the commit property in the CBON metadata which is used by CBOMkit viewer.
+- `GITHUB_REF_NAME`: (Optional) Github ref name. Will be used to set the revision (branch)  property in the CBOM metadata which is used by CBOMkit viewer.
+- `GITHUB_SHA`: (Optional) Github commit SHA value. The first 7 characters will be used to set the commit property in the CBON metadata which is used by CBOMkit viewer.
 
 ### Scanning Options
 
 CBOMkit-action's behavior can be controlled via the following additional environment variables.
 
-- CBOMKIT_OUTPUT_DIR: (Optional) Output directory for CBOM files. Defaults to "cbom" if not set.
-- CBOMKIT_EXCLUDE: (Optional) Comma-separated list of java regex patterns. Matches the first occurrence of a pattern in source file/dir paths relative to the GITHUB_WORKSPACE. Files/dirs are excluded from scanning if any of the patterns match. By default, CBOMKit excludes test files from scanning. Setting CBOKKIT_EXCLUDE overrules this default. Setting CBOMKIT_EXCLUDE to an empty string turns off exclusion resulting in a complete scan of all source files. 
-- CBOMKIT_LANGUAGES: (Optional) Comma-separated list of programming languages to scan. White-space will be ignored. If set, only specified programming languages will be scanned. Since CBOMkit currently supports Java and Python, only `java` or `python` are plausible values.
-- CBOMKIT_GENERATE_MODULE_CBOMS: (Optional) Generate CBOMs for project modules. Default value is `true`.
-= CBOMKIT_WRITE_EMTPY_CBOMS: (Optional) Also write CBOMs with 0 findings. Default value is `true`.
-- CBOMKIT_JAVA_REQUIRE_BUILD: (Optional) Java scans will terminate with an error if java files were found **and** the repo was not built prior to scanning. Default value is `true`. Setting it to `false` allows source-only scans of java repos with potentially lower accuracy.
-- CBOMKIT_JAVA_JAR_DIR: (Optional) CBOMkit-action auto-constructs a list of jar/zip files to be considered for scanning. This option allows the specification of an additional directory for jar/zip files specific to the crypto library.
+- `CBOMKIT_OUTPUT_DIR`: (Optional) Output directory for CBOM files. Defaults to "cbom" if not set.
+- `CBOMKIT_EXCLUDE`: (Optional) Comma-separated list of java regex patterns. Matches the first occurrence of a pattern in source file/dir paths relative to the GITHUB_WORKSPACE. Files/dirs are excluded from scanning if any of the patterns match. By default, CBOMKit excludes test files from scanning. Setting CBOKKIT_EXCLUDE overrules this default. Setting CBOMKIT_EXCLUDE to an empty string turns off exclusion resulting in a complete scan of all source files. 
+- `CBOMKIT_LANGUAGES`: (Optional) Comma-separated list of programming languages to scan. White-space will be ignored. If set, only specified programming languages will be scanned. Since CBOMkit currently supports Java and Python, only `java` or `python` are plausible values.
+- `CBOMKIT_GENERATE_MODULE_CBOMS`: (Optional) Generate CBOMs for project modules. Default value is `true`.
+- `CBOMKIT_WRITE_EMTPY_CBOMS`: (Optional) Also write CBOMs with 0 findings. Default value is `true`.
+- `CBOMKIT_JAVA_REQUIRE_BUILD`: (Optional) Java scans will terminate with an error if java files were found **and** the repo was not built prior to scanning. Default value is `true`. Setting it to `false` allows source-only scans of java repos with potentially lower accuracy.
+- `CBOMKIT_JAVA_JAR_DIR`: (Optional) CBOMkit-action auto-constructs a list of jar/zip files to be considered for scanning. This option allows the specification of an additional directory for jar/zip files specific to the crypto library.
 
 ## Supported languages and libraries
 
