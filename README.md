@@ -42,10 +42,16 @@ jobs:
           if-no-files-found: warn 
 ```
 
-[!NOTE]
-For java repositories, the precision and the quality of generated CBOM depends on the scanner's ability
-to resolve symbols defined in the dependencies. We therefore recommend to build all java code prior to scanning
-as shown in above example. `cbomkit-action` auto-constructs a list of directories used by the scanner to search for java dependencies (jar/zip files). By default, this list contains the project directory (cloning target) and the maven/gradle default repository path. The scanning option `CBOMKIT_JAVA_JAR_DIR` allows to append an additional path expression to the default list. This expression may contain wildcards (`*`) to denote arbitrary directories.
+> [!NOTE]
+> For java repositories, the precision and the quality of generated CBOM depends
+> on the scanner's ability to resolve symbols defined in the dependencies. We
+> therefore recommend to build all java code prior to scanning as shown in above
+> example. `cbomkit-action` auto-constructs a list of directories used by the
+> scanner to search for java dependencies (jar/zip files). By default, this list
+> contains the project directory (cloning target) and the maven/gradle default
+> repository path. The scanning option `CBOMKIT_JAVA_JAR_DIR` allows to append
+> an additional path expression to the default list. This expression may contain
+> wildcards (`*`) to denote arbitrary directories.
 
 ### Parameters
 
