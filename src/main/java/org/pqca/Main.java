@@ -23,14 +23,20 @@ import jakarta.annotation.Nonnull;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.pqca.indexing.IndexingService;
+import org.pqca.indexing.go.GoIndexService;
 import org.pqca.indexing.java.JavaIndexService;
 import org.pqca.indexing.python.PythonIndexService;
 import org.pqca.scanning.CBOM;
+import org.pqca.scanning.Language;
 import org.pqca.scanning.ScanResultDTO;
+import org.pqca.scanning.ScannerService;
+import org.pqca.scanning.go.GoScannerService;
 import org.pqca.scanning.java.JavaScannerService;
 import org.pqca.scanning.python.PythonScannerService;
 import org.slf4j.Logger;
@@ -69,22 +75,30 @@ public class Main {
                                 .collect(Collectors.toList());
 
         final String languagesStr = System.getenv("CBOMKIT_LANGUAGES");
-        final List<String> languages =
-                languagesStr == null || languagesStr.isEmpty()
-                        ? Collections.emptyList()
+        List<Language> configuredLanguages =
+                languagesStr == null || languagesStr.trim().isEmpty()
+                        ? Arrays.asList(Language.values())
                         : Arrays.stream(languagesStr.split(","))
-                                .map(s -> s.trim().toLowerCase())
+                                .map(s -> s.trim())
+                                .map(String::toUpperCase)
+                                .map(Language::valueOf)
                                 .collect(Collectors.toList());
 
+        // Statistics and aggegator
+        long scanningTime = 0;
         int numberOfScannedFiles = 0;
         int numberOfScannedLines = 0;
         CBOM consolidatedCBOM = null;
 
-        // Scan java
-        long scanningTime = 0;
-        if (languages.isEmpty() || languages.contains("java")) {
+        // Set up indexers and scanners
+        final Map<Language, IndexingService> indexers = new HashMap<>();
+        final Map<Language, ScannerService> scanners = new HashMap<>();
+
+        // java
+        if (configuredLanguages.contains(Language.JAVA)) {
             final JavaIndexService javaIndexService = new JavaIndexService(projectDirectory);
-            javaIndexService.setExcludePatterns(excludePatterns);
+            indexers.put(Language.JAVA, javaIndexService);
+
             final JavaScannerService javaScannerService = new JavaScannerService(projectDirectory);
             javaScannerService.setRequireBuild(
                     Optional.ofNullable(System.getenv("CBOMKIT_JAVA_REQUIRE_BUILD"))
@@ -97,33 +111,36 @@ public class Main {
             javaScannerService.addJavaDependencyJar(System.getProperty("user.home") + "/.gradle");
             javaScannerService.addJavaDependencyJar(System.getenv("CBOMKIT_JAVA_JAR_DIR"));
             javaScannerService.addJavaClassDir(projectDirectory.getAbsolutePath());
-
-            ScanResultDTO javaResultDTO =
-                    bomGenerator.generateBom(javaIndexService, javaScannerService);
-            consolidatedCBOM = javaResultDTO.cbom();
-            numberOfScannedFiles += javaResultDTO.numberOfScannedFiles();
-            numberOfScannedLines += javaResultDTO.numberOfScannedLines();
-            scanningTime = javaResultDTO.endTime() - javaResultDTO.startTime();
+            scanners.put(Language.JAVA, javaScannerService);
         }
 
-        // Scan python
-        if (languages.isEmpty() || languages.contains("python")) {
-            final PythonIndexService pythonIndexService = new PythonIndexService(projectDirectory);
-            pythonIndexService.setExcludePatterns(excludePatterns);
-            final PythonScannerService pythonScannerService =
-                    new PythonScannerService(projectDirectory);
+        // python
+        if (configuredLanguages.contains(Language.PYTHON)) {
+            indexers.put(Language.PYTHON, new PythonIndexService(projectDirectory));
+            scanners.put(Language.PYTHON, new PythonScannerService(projectDirectory));
+        }
 
-            ScanResultDTO pythonResultDTO =
-                    bomGenerator.generateBom(pythonIndexService, pythonScannerService);
+        // go
+        if (configuredLanguages.contains(Language.GO)) {
+            indexers.put(Language.GO, new GoIndexService(projectDirectory));
+            scanners.put(Language.GO, new GoScannerService(projectDirectory));
+        }
 
+        // Generate CBOM
+        for (Language language : configuredLanguages) {
+            IndexingService indexer = indexers.get(language);
+            indexer.setExcludePatterns(excludePatterns);
+            ScannerService scanner = scanners.get(language);
+
+            ScanResultDTO scanResultDTO = bomGenerator.generateBom(indexer, scanner);
             if (consolidatedCBOM != null) {
-                consolidatedCBOM.merge(pythonResultDTO.cbom());
+                consolidatedCBOM.merge(scanResultDTO.cbom());
             } else {
-                consolidatedCBOM = pythonResultDTO.cbom();
+                consolidatedCBOM = scanResultDTO.cbom();
             }
-            numberOfScannedFiles += pythonResultDTO.numberOfScannedFiles();
-            numberOfScannedLines += pythonResultDTO.numberOfScannedLines();
-            scanningTime += (pythonResultDTO.endTime() - pythonResultDTO.startTime());
+            numberOfScannedFiles += scanResultDTO.numberOfScannedFiles();
+            numberOfScannedLines += scanResultDTO.numberOfScannedLines();
+            scanningTime += scanResultDTO.endTime() - scanResultDTO.startTime();
         }
 
         LOGGER.info(
