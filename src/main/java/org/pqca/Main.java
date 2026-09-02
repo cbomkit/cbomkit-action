@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.pqca.indexing.IndexingService;
+import org.pqca.indexing.csharp.CSharpIndexService;
 import org.pqca.indexing.go.GoIndexService;
 import org.pqca.indexing.java.JavaIndexService;
 import org.pqca.indexing.python.PythonIndexService;
@@ -36,6 +37,7 @@ import org.pqca.scanning.CBOM;
 import org.pqca.scanning.Language;
 import org.pqca.scanning.ScanResultDTO;
 import org.pqca.scanning.ScannerService;
+import org.pqca.scanning.csharp.CSharpScannerService;
 import org.pqca.scanning.go.GoScannerService;
 import org.pqca.scanning.java.JavaScannerService;
 import org.pqca.scanning.python.PythonScannerService;
@@ -124,6 +126,12 @@ public class Main {
         if (configuredLanguages.contains(Language.GO)) {
             indexers.put(Language.GO, new GoIndexService(projectDirectory));
             scanners.put(Language.GO, new GoScannerService(projectDirectory));
+        }
+
+        // csharp
+        if (configuredLanguages.contains(Language.CSHARP)) {
+            indexers.put(Language.CSHARP, new CSharpIndexService(projectDirectory));
+            scanners.put(Language.CSHARP, new CSharpScannerService(projectDirectory));
         }
 
         // Generate CBOM
