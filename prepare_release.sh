@@ -45,7 +45,7 @@ echo "Staging changes..."
 git add pom.xml "$ACTION_FILE" "$BUILD_FILE"
 
 echo "Committing changes..."
-git commit -m "chore: bump version to $VERSION"
+git commit -s -m "chore: bump version to $VERSION"
 
 echo "Pushing to remote repository..."
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
