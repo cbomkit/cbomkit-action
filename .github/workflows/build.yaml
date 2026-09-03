@@ -92,28 +92,12 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      - name: Pin release image tag
-        # Rewrites the image reference in action.yml from the mutable :edge tag
-        # to the exact version tag being released, then moves the git tag to
-        # point at the new commit so consumers always get a pinned image.
-        if: github.event_name == 'release'
-        run: |
-          VERSION="${{ github.event.release.tag_name }}"
-          IMAGE_TAG="${VERSION#v}"
-          sed -i "s|image: 'docker://ghcr.io/${{ env.ORG }}/${{ env.IMAGE_NAME }}:.*'|image: 'docker://ghcr.io/${{ env.ORG }}/${{ env.IMAGE_NAME }}:${IMAGE_TAG}'|" action.yml
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add action.yml
-          git commit -m "chore: pin action.yml image to ${VERSION}"
-          git push origin HEAD:main
-          git tag -f "${VERSION}"
-          git push origin -f "${VERSION}"
       # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
       - name: Update dependency graph
         uses: advanced-security/maven-dependency-submission-action@v5
         if: github.event_name != 'pull_request'
       - name: Create CBOM
-        uses: cbomkit/cbomkit-action@main
+        uses: cbomkit/cbomkit-action@v2.2.0
         id: cbom
           # Persist CBOM after a job has completed and share
           # that CBOM with another job in the same workflow.
