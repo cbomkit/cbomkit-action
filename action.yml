@@ -13,4 +13,4 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/cbomkit/cbomkit-action:edge'
+  image: 'docker://ghcr.io/cbomkit/cbomkit-action:v2.3.0'
