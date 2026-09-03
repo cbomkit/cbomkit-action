@@ -97,7 +97,7 @@ jobs:
         uses: advanced-security/maven-dependency-submission-action@v5
         if: github.event_name != 'pull_request'
       - name: Create CBOM
-        uses: cbomkit/cbomkit-action@v2.2.0
+        uses: cbomkit/cbomkit-action@latest
         id: cbom
           # Persist CBOM after a job has completed and share
           # that CBOM with another job in the same workflow.
