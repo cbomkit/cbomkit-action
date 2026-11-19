@@ -22,6 +22,9 @@ package org.pqca;
 import jakarta.annotation.Nonnull;
 import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -108,9 +111,16 @@ public class Main {
                             .map(v -> v.equalsIgnoreCase("true"))
                             .orElse(true));
             javaScannerService.addJavaDependencyJar(projectDirectory.getAbsolutePath());
-            javaScannerService.addJavaDependencyJar(
-                    System.getProperty("user.home") + "/.m2/repository");
-            javaScannerService.addJavaDependencyJar(System.getProperty("user.home") + "/.gradle");
+            for (String dir : List.of(".m2/repository", ".gradle")) {
+                Path dependencyDir = Paths.get(System.getProperty("user.home"), dir);
+                if (Files.isDirectory(dependencyDir)) {
+                    try {
+                        javaScannerService.addJavaDependencyJar(dependencyDir.toAbsolutePath().toString());
+                    } catch (RuntimeException e) {
+                        LOGGER.error("Skipping dependency dir {}: {}", dependencyDir, e.getMessage());
+                    }
+                }
+            }
             javaScannerService.addJavaDependencyJar(System.getenv("CBOMKIT_JAVA_JAR_DIR"));
             javaScannerService.addJavaClassDir(projectDirectory.getAbsolutePath());
             scanners.put(Language.JAVA, javaScannerService);
